@@ -8,7 +8,7 @@ body {
     color: #333; /* Warna teks default yang mudah dibaca di atas overlay terang/gelap */
 
     /* --- GAYA PARALLAX SEBAGAI BACKGROUND BODY --- */
-    background-image: url('../assets/1749237997337.jpg'); /* Pastikan path ini benar! */
+    background-image: url('../assets/backgroud-parallax-ad.jpg'); /* Pastikan path ini benar! */
     background-attachment: fixed; /* Kunci gambar agar tidak ikut menggulir */
     background-position: center;
     background-repeat: no-repeat;
