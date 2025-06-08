@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoPlayerSection = document.getElementById('video-player-section');
     const myVideo = document.getElementById('myVideo');
     const videoList = document.getElementById('video-list');
-    const inlineParallaxAdContent = document.getElementById('inline-parallax-ad-content'); // Placeholder untuk iklan parallax inline
+    const inlineParallaxAdContent = document.getElementById('inline-parallax-ad-content'); // Referensi ke placeholder iklan parallax inline
 
     const adDisplayDuration = 3000; // Durasi tunggu iklan pre-roll dalam milidetik (3 detik)
 
@@ -22,57 +22,59 @@ document.addEventListener('DOMContentLoaded', () => {
      * Menggulir halaman ke bagian atas video player.
      */
     function scrollToVideoPlayer() {
-        // Kita akan menggulir ke #video-player-section
-        // karena itu adalah kontainer utama yang berisi video player.
+        // Menggulir ke #video-player-section untuk memastikan video player terlihat
         videoPlayerSection.scrollIntoView({
             behavior: 'smooth', // Efek gulir yang halus
             block: 'start'      // Menggulir hingga elemen berada di awal viewport
         });
     }
 
-
     /**
      * Memuat dan memutar video di elemen <video>.
      * @param {number} index - Indeks video dari array 'videos'.
+     * @param {boolean} autoPlay - Apakah video harus diputar otomatis setelah dimuat.
      */
-    function loadVideo(index) {
+    function loadVideo(index, autoPlay = false) {
         if (index >= 0 && index < videos.length) {
             myVideo.src = videos[index].src; // Setel URL video
             myVideo.load(); // Muat ulang video
-            myVideo.play(); // Putar video secara otomatis
-            myVideo.muted = false; // Batalkan mute agar suara terdengar
+            if (autoPlay) {
+                myVideo.play(); // Putar video jika 'autoPlay' true
+                myVideo.muted = false; // Batalkan mute jika diputar otomatis
+            } else {
+                myVideo.pause(); // Jeda jika tidak autoPlay (misal, saat pertama dimuat)
+                myVideo.muted = true; // Biarkan muted jika belum diputar (opsional, bisa diubah)
+            }
             currentVideoIndex = index; // Perbarui indeks video yang sedang aktif diputar
             updateActiveVideoLink(); // Update highlight pada daftar video
         }
     }
 
     /**
-     * Menampilkan overlay iklan direct link (pre-roll) dan menyiapkan tombol direct link.
+     * Menampilkan overlay iklan direct link (pre-roll).
+     * Kini hanya fokus pada tampilan overlay, karena video player selalu terlihat.
      */
     function showAdOverlay() {
         adOverlay.classList.remove('hidden'); // Tampilkan overlay iklan
-        videoPlayerSection.classList.add('hidden'); // Sembunyikan bagian player & daftar video
-        myVideo.pause(); // Jeda video yang sedang diputar
-        myVideo.currentTime = 0; // Reset waktu video ke awal (opsional, bisa dihapus)
+        myVideo.pause(); // Jeda video yang sedang diputar di player
+        myVideo.currentTime = 0; // Reset waktu video ke awal (opsional)
 
         // Nonaktifkan tombol iklan sementara dan tampilkan hitungan mundur
-        adLink.style.pointerEvents = 'none';
-        adLink.style.opacity = '0.6';
+        adLink.style.pointerEvents = 'none'; // Membuat tombol tidak dapat diklik
+        adLink.style.opacity = '0.6'; // Memberi efek visual nonaktif
         adLink.textContent = `Mohon tunggu ${adDisplayDuration / 1000} detik...`;
 
-        // Pilih URL direct link iklan pre-roll secara acak dari array 'directLinks'
+        // Pilih URL direct link iklan pre-roll secara acak
         if (directLinks.length > 0) {
             const randomAdIndex = Math.floor(Math.random() * directLinks.length);
             randomDirectLink = directLinks[randomAdIndex];
             console.log('Direct link iklan pre-roll yang dipilih:', randomDirectLink);
         } else {
             console.warn('Tidak ada direct link iklan pre-roll ditemukan di ads.json. Melanjutkan tanpa iklan.');
-            // Jika tidak ada iklan yang tersedia, langsung lanjutkan ke video tanpa menampilkan overlay iklan
+            // Jika tidak ada iklan, sembunyikan overlay dan langsung putar video
             adOverlay.classList.add('hidden');
-            videoPlayerSection.classList.remove('hidden');
-            loadVideo(selectedVideoIndex); // Putar video yang sudah dipilih
-            // --- NEW: Gulir ke video player jika iklan dilewati ---
-            scrollToVideoPlayer();
+            loadVideo(selectedVideoIndex, true); // Langsung putar video
+            scrollToVideoPlayer(); // Gulir ke video player
             return; // Hentikan eksekusi fungsi
         }
 
@@ -117,9 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Jika video yang dipilih berbeda dari yang sedang diputar, tampilkan iklan lagi
                 if (index !== currentVideoIndex) {
                     selectedVideoIndex = index; // Simpan indeks video yang dipilih pengguna
+                    loadVideo(selectedVideoIndex, false); // Muat video baru, tapi JANGAN putar otomatis dulu
                     showAdOverlay(); // Panggil fungsi untuk menampilkan iklan pre-roll
-                    // --- NEW: Gulir ke video player setelah memilih video, sebelum iklan muncul ---
-                    scrollToVideoPlayer();
+                    scrollToVideoPlayer(); // Gulir ke video player untuk fokus
                 }
             });
             listItem.appendChild(link);
@@ -131,22 +133,26 @@ document.addEventListener('DOMContentLoaded', () => {
      * Menyuntikkan script iklan parallax dari penyedia iklan ke dalam placeholder HTML.
      */
     function injectParallaxProviderAd() {
+        // ID div target dari penyedia iklan (pastikan ini ada di index.html)
         const providerAdTargetId = 'container-2c979ea6eea470e28aecac661089d1a9';
         const providerScriptSrc = "//pl26583030.profitableratecpm.com/2c979ea6eea470e28aecac661089d1a9/invoke.js";
 
+        // Hapus script yang mungkin sudah ada untuk mencegah duplikasi atau masalah loading
         const existingScript = document.getElementById('profitablerate-ad-script');
         if (existingScript) {
             existingScript.remove();
         }
 
+        // Buat elemen script baru secara dinamis
         const script = document.createElement('script');
-        script.id = 'profitablerate-ad-script';
-        script.async = true;
-        script.dataset.cfasync = false;
-        script.src = providerScriptSrc;
+        script.id = 'profitablerate-ad-script'; // Beri ID unik agar mudah dihapus/dicek
+        script.async = true; // Muat script secara asynchronous
+        script.dataset.cfasync = false; // Atribut data-cfasync
+        script.src = providerScriptSrc; // Setel URL sumber script
 
-        inlineParallaxAdContent.appendChild(script);
+        inlineParallaxAdContent.appendChild(script); // Tambahkan script ke dalam placeholder kita
 
+        // Opsional: Kosongkan div target iklan penyedia jika ada konten lama
         const adContainerDiv = document.getElementById(providerAdTargetId);
         if (adContainerDiv) {
             adContainerDiv.innerHTML = '';
@@ -155,22 +161,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Pengambilan Data Asinkron dari File JSON ---
 
+    // Mengambil daftar video dari 'data/videos.json'
     fetch('data/videos.json')
         .then(response => {
             if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
             return response.json();
         })
         .then(data => {
-            videos = data;
-            populateVideoList();
+            videos = data; // Simpan data video
+            populateVideoList(); // Isi daftar video di UI
+
+            // Pilih indeks video secara acak untuk video utama yang akan ditampilkan pertama kali
             const randomIndex = Math.floor(Math.random() * videos.length);
-            selectedVideoIndex = randomIndex;
+            selectedVideoIndex = randomIndex; // Video ini akan dimuat ke player
+            loadVideo(selectedVideoIndex, false); // Muat video tapi JANGAN putar otomatis di awal
         })
         .catch(error => {
             console.error('Error fetching videos:', error);
             alert('Gagal memuat daftar video. Silakan coba lagi nanti.');
         });
 
+    // Mengambil daftar direct link iklan pre-roll dari 'data/ads.json'
     fetch('data/ads.json')
         .then(response => {
             if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
@@ -178,32 +189,25 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             directLinks = data;
-            showAdOverlay(); // Tampilkan iklan pre-roll pertama kali
+            showAdOverlay(); // Tampilkan iklan pre-roll pertama kali setelah data iklan siap
         })
         .catch(error => {
             console.error('Error fetching direct links:', error);
-            alert('Gagal memuat iklan. Video akan diputar tanpa iklan.');
+            alert('Gagal memuat iklan. Anda mungkin tidak dapat memutar video.');
+            // Jika gagal memuat iklan, sembunyikan overlay iklan
             adOverlay.classList.add('hidden');
-            videoPlayerSection.classList.remove('hidden');
-            loadVideo(selectedVideoIndex);
-            // --- NEW: Gulir ke video player jika iklan gagal dimuat ---
-            scrollToVideoPlayer();
         });
 
     // --- Event Listener Global ---
 
     // Listener untuk klik pada tombol iklan direct link (pre-roll)
     adLink.addEventListener('click', (event) => {
-        adOverlay.classList.add('hidden');
-        videoPlayerSection.classList.remove('hidden');
-        loadVideo(selectedVideoIndex); // Putar video yang terakhir dipilih/disiapkan
-        // --- NEW: Gulir ke video player setelah iklan diklik dan video mulai diputar ---
-        scrollToVideoPlayer();
+        adOverlay.classList.add('hidden'); // Sembunyikan overlay iklan
+        loadVideo(selectedVideoIndex, true); // Putar video yang terakhir dipilih/disiapkan
+        scrollToVideoPlayer(); // Gulir ke video player
     });
 
     // --- Inisialisasi Awal ---
-
     // Panggil fungsi untuk menyuntikkan script iklan parallax dari penyedia saat DOM siap.
     injectParallaxProviderAd();
 });
-        
