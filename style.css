@@ -4,22 +4,44 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f2f5;
     margin: 0;
-    color: #333;
+    color: #333; /* Warna teks default yang mudah dibaca di atas overlay terang/gelap */
+
+    /* --- GAYA PARALLAX SEBAGAI BACKGROUND BODY --- */
+    background-image: url('../assets/background-parallax-ad.jpg'); /* Pastikan path ini benar! */
+    background-attachment: fixed; /* Kunci gambar agar tidak ikut menggulir */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover; /* Pastikan gambar mencakup seluruh area */
+    position: relative; /* Untuk pseudo-element overlay */
+    z-index: 0;
+}
+
+/* Overlay untuk memastikan konten utama terbaca */
+body::before {
+    content: '';
+    position: fixed; /* Penting agar overlay menutupi seluruh viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Overlay hitam 60% transparan untuk kontras yang baik */
+    z-index: -1; /* Pastikan di bawah konten body */
 }
 
 .container {
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.9); /* Latar belakang semi-transparan untuk konten utama */
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Bayangan lebih kuat untuk kontras */
     text-align: center;
-    max-width: 900px; /* Lebar maksimum yang lebih besar untuk daftar video */
+    max-width: 900px;
     width: 90%;
-    display: flex; /* Menggunakan flexbox untuk tata letak kolom */
+    display: flex;
     flex-direction: column;
-    gap: 20px; /* Jarak antar elemen dalam container */
+    gap: 20px;
+    position: relative;
+    z-index: 1; /* Pastikan container berada di atas overlay dan background body */
 }
 
 h1 {
@@ -38,6 +60,7 @@ h1 {
     align-items: center;
     justify-content: center;
     min-height: 200px;
+    z-index: 2; /* Pastikan ad-overlay berada di atas container saat aktif */
 }
 
 .ad-overlay p {
@@ -69,20 +92,31 @@ h1 {
 }
 
 .video-player-section {
-    display: flex; /* Untuk menempatkan player dan daftar video secara berdampingan */
-    flex-direction: column; /* Default ke kolom untuk mobile */
+    display: flex;
+    flex-direction: column;
     gap: 20px;
 }
 
 @media (min-width: 768px) {
     .video-player-section {
-        flex-direction: row; /* Berdampingan untuk desktop */
-        align-items: flex-start; /* Sejajarkan di bagian atas */
+        flex-direction: row;
+        align-items: flex-start;
+        display: grid; /* Menggunakan Grid untuk layout desktop */
+        grid-template-columns: 2fr 1fr; /* Player 2/3, Daftar 1/3 */
+        grid-template-areas: "player list";
+        gap: 20px;
+    }
+
+    .video-player-container {
+        grid-area: player;
+    }
+
+    .video-list-container {
+        grid-area: list;
     }
 }
 
 .video-player-container {
-    flex: 2; /* Mengambil 2/3 ruang */
     width: 100%;
     position: relative;
     padding-bottom: 56.25%; /* Rasio aspek 16:9 */
@@ -100,8 +134,7 @@ h1 {
 }
 
 .video-list-container {
-    flex: 1; /* Mengambil 1/3 ruang */
-    background-color: #f9f9f9;
+    background-color: rgba(249, 249, 249, 0.9); /* Juga semi-transparan */
     padding: 15px;
     border-radius: 8px;
     text-align: left;
