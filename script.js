@@ -16,10 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentVideoIndex = 0; // Indeks dari video yang sedang diputar di player
     let selectedVideoIndex = 0; // Indeks dari video yang dipilih pengguna, yang akan diputar setelah iklan
 
-    // --- NEW: Variabel untuk melacak klik pertama ---
-    let isFirstClickHandled = false;
-    // URL direct link khusus untuk klik pertama di halaman (bisa sama dengan directLinks, atau berbeda)
-    const firstClickRedirectUrl = "https://your-special-first-click-ad-link.com"; // GANTI DENGAN URL ANDA!
+    // --- NEW: Variabel untuk iklan global (klik di mana saja) ---
+    let isFirstClickHandled = false; // Melacak apakah redirect klik pertama sudah terjadi
+    // URL direct link khusus untuk klik pertama di halaman (akan diambil dari global_direct_links.json)
+    let globalDirectLinks = []; // Array untuk menyimpan URL direct link global
+
+    let lastGlobalClickTime = 0; // Waktu terakhir iklan global dipicu
+    const globalClickCooldown = 30 * 1000; // Jeda 30 detik dalam milidetik antar pemicuan iklan global
 
     // --- Definisi Fungsi Utama ---
 
@@ -191,6 +194,21 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollToVideoPlayer();
         });
 
+    // --- NEW: Mengambil daftar direct link global dari global_direct_links.json ---
+    fetch('data/global_direct_links.json')
+        .then(response => {
+            if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+            return response.json();
+        })
+        .then(data => {
+            globalDirectLinks = data;
+        })
+        .catch(error => {
+            console.error('Error fetching global direct links:', error);
+            console.warn('Iklan global tidak akan berfungsi tanpa link.');
+        });
+
+
     // --- Event Listener Global ---
 
     // Listener untuk klik pada tombol iklan direct link (pre-roll)
@@ -200,26 +218,51 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToVideoPlayer();
     });
 
-    // --- NEW: Fungsi Penanganan Klik Pertama ---
-    function handleFirstClick(event) {
+    // --- Fungsi Penanganan Klik Global (termasuk klik pertama dan berulang) ---
+    function handleGlobalClick(event) {
+        const currentTime = Date.now(); // Dapatkan waktu saat ini
+
+        // Penting: Abaikan klik jika tidak ada direct link global yang tersedia
+        if (globalDirectLinks.length === 0) {
+            console.warn('Tidak ada global direct links untuk dipicu.');
+            return;
+        }
+
+        // Logika untuk klik pertama di halaman
         if (!isFirstClickHandled) {
             isFirstClickHandled = true; // Set flag
-            // Buka link direct di tab/jendela baru
-            window.open(firstClickRedirectUrl, '_blank');
+            // Pilih link acak untuk klik pertama
+            const randomIndex = Math.floor(Math.random() * globalDirectLinks.length);
+            const redirectUrl = globalDirectLinks[randomIndex];
+            
+            window.open(redirectUrl, '_blank'); // Buka link direct di tab/jendela baru
+            lastGlobalClickTime = currentTime; // Catat waktu klik pertama
+            return; // Hentikan fungsi agar tidak langsung memicu iklan berulang
+        }
 
-            // Hapus event listener ini agar hanya terpicu sekali
-            document.removeEventListener('click', handleFirstClick);
-            document.removeEventListener('scroll', handleFirstClick); // Juga untuk scroll jika Anda ingin itu memicu
-            document.removeEventListener('touchstart', handleFirstClick); // Untuk mobile
+        // Logika untuk klik berulang (setelah klik pertama)
+        // Periksa apakah waktu jeda (cooldown) sudah berlalu
+        if (currentTime - lastGlobalClickTime >= globalClickCooldown) {
+            // Periksa apakah klik berasal dari elemen-elemen yang kita kelola secara terpisah
+            // agar iklan global hanya terpicu dari klik "biasa" di luar elemen-elemen ini.
+            const clickedElement = event.target;
+            const isManagedElement = clickedElement === adLink || adLink.contains(clickedElement) ||
+                                     videoList.contains(clickedElement) || clickedElement.closest('a'); // closest('a') untuk menangkap link anak
+
+            if (!isManagedElement) {
+                // Pilih link acak untuk klik berulang
+                const randomIndex = Math.floor(Math.random() * globalDirectLinks.length);
+                const redirectUrl = globalDirectLinks[randomIndex];
+                window.open(redirectUrl, '_blank'); // Buka link direct di tab/jendela baru
+                lastGlobalClickTime = currentTime; // Reset waktu klik untuk jeda
+            }
         }
     }
 
     // --- Inisialisasi Awal ---
     injectParallaxProviderAd();
 
-    // --- NEW: Tambahkan event listener untuk klik pertama pada dokumen ---
-    // Gunakan 'click', 'scroll', atau 'touchstart' untuk memastikan terpicu di berbagai situasi
-    document.addEventListener('click', handleFirstClick);
-    document.addEventListener('scroll', handleFirstClick); // Opsional: picu pada scroll
-    document.addEventListener('touchstart', handleFirstClick); // Opsional: picu pada sentuhan (mobile)
+    // --- Tambahkan event listener untuk klik global pada dokumen ---
+    document.addEventListener('click', handleGlobalClick);
+    document.addEventListener('touchstart', handleGlobalClick); // Untuk perangkat sentuh
 });
