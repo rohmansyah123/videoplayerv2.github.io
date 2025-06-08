@@ -1,55 +1,58 @@
+/* Gaya Umum & Reset Dasar */
 body {
     font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 100vh; /* Memastikan body setidaknya setinggi viewport */
     margin: 0;
-    color: #333; /* Warna teks default yang mudah dibaca di atas overlay terang/gelap */
+    color: #333; /* Warna teks default untuk konten utama */
 
     /* --- GAYA PARALLAX SEBAGAI BACKGROUND BODY --- */
-    background-image: url('../assets/backgroud-parallax-ad.jpg'); /* Pastikan path ini benar! */
-    background-attachment: fixed; /* Kunci gambar agar tidak ikut menggulir */
+    background-image: url('../assets/background-parallax-ad.jpg'); /* Ganti dengan PATH gambar Anda */
+    background-attachment: fixed; /* Kunci gambar latar belakang agar tidak ikut menggulir, menciptakan efek parallax */
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover; /* Pastikan gambar mencakup seluruh area */
-    position: relative; /* Untuk pseudo-element overlay */
-    z-index: 0;
+    background-size: cover; /* Memastikan gambar mencakup seluruh area */
+    position: relative; /* Diperlukan untuk pseudo-element overlay */
+    z-index: 0; /* Menempatkan body di lapisan paling bawah */
 }
 
-/* Overlay untuk memastikan konten utama terbaca */
+/* Overlay Transparan di atas Background Parallax untuk Meningkatkan Keterbacaan Konten */
 body::before {
     content: '';
-    position: fixed; /* Penting agar overlay menutupi seluruh viewport */
+    position: fixed; /* Menjadikan overlay menutupi seluruh viewport dan tetap pada posisinya */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Overlay hitam 60% transparan untuk kontras yang baik */
-    z-index: -1; /* Pastikan di bawah konten body */
+    background-color: rgba(0, 0, 0, 0.6); /* Lapisan hitam 60% transparan */
+    z-index: -1; /* Menempatkan overlay di bawah konten body tetapi di atas background */
 }
 
+/* Kontainer Utama Konten (Video Player, Iklan Inline, Daftar Video) */
 .container {
-    background-color: rgba(255, 255, 255, 0.9); /* Latar belakang semi-transparan untuk konten utama */
+    background-color: rgba(255, 255, 255, 0.9); /* Latar belakang semi-transparan putih untuk konten utama */
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Bayangan lebih kuat untuk kontras */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Bayangan untuk memberikan kedalaman */
     text-align: center;
-    max-width: 900px;
-    width: 90%;
+    max-width: 900px; /* Lebar maksimum kontainer */
+    width: 90%; /* Lebar responsif */
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: column; /* Tata letak kolom default untuk mobile */
+    gap: 20px; /* Jarak antar elemen anak */
     position: relative;
-    z-index: 1; /* Pastikan container berada di atas overlay dan background body */
+    z-index: 1; /* Pastikan kontainer berada di atas overlay dan background body */
 }
 
 h1 {
-    color: #0056b3;
+    color: #0056b3; /* Warna judul utama */
     margin-bottom: 20px;
 }
 
-.ad-overlay {
+/* Gaya untuk Overlay Iklan Direct Link (Pre-roll) */
+#ad-overlay {
     background-color: #e0f7fa;
     border: 2px dashed #007bff;
     padding: 25px;
@@ -60,17 +63,17 @@ h1 {
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    z-index: 2; /* Pastikan ad-overlay berada di atas container saat aktif */
+    z-index: 2; /* Pastikan ad-overlay berada di atas kontainer saat aktif */
 }
 
-.ad-overlay p {
+#ad-overlay p {
     font-size: 1.1em;
     margin-bottom: 15px;
 }
 
 .ad-button {
     display: inline-block;
-    background-color: #28a745;
+    background-color: #28a745; /* Warna hijau */
     color: white;
     padding: 12px 25px;
     border-radius: 5px;
@@ -91,41 +94,50 @@ h1 {
     margin-top: 15px;
 }
 
-.video-player-section {
+/* Bagian Video Player dan Daftar Video */
+#video-player-section {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Default ke kolom untuk mobile */
     gap: 20px;
 }
 
+/* Media Query untuk Tata Letak Desktop */
 @media (min-width: 768px) {
-    .video-player-section {
-        flex-direction: row;
-        align-items: flex-start;
-        display: grid; /* Menggunakan Grid untuk layout desktop */
-        grid-template-columns: 2fr 1fr; /* Player 2/3, Daftar 1/3 */
-        grid-template-areas: "player list";
+    #video-player-section {
+        flex-direction: row; /* Berdampingan untuk desktop */
+        align-items: flex-start; /* Sejajarkan konten di bagian atas */
+        display: grid; /* Menggunakan Grid untuk kontrol layout yang lebih baik */
+        grid-template-columns: 2fr 1fr; /* Video Player 2/3, Daftar Video 1/3 */
+        grid-template-areas:
+            "player list"
+            "inline-ad inline-ad"; /* Iklan parallax inline membentang di bawah player dan list */
         gap: 20px;
     }
 
-    .video-player-container {
+    #video-player-container {
         grid-area: player;
     }
 
-    .video-list-container {
+    #video-list-container {
         grid-area: list;
+    }
+
+    /* Menempatkan iklan parallax inline di bawah player dan daftar untuk desktop */
+    #inline-parallax-ad-content {
+        grid-area: inline-ad;
     }
 }
 
-.video-player-container {
+#video-player-container {
     width: 100%;
     position: relative;
-    padding-bottom: 56.25%; /* Rasio aspek 16:9 */
+    padding-bottom: 56.25%; /* Rasio aspek 16:9 untuk video responsif */
     height: 0;
     overflow: hidden;
-    background-color: #000;
+    background-color: #000; /* Latar belakang hitam saat video belum dimuat */
 }
 
-.video-player-container video {
+#video-player-container video {
     position: absolute;
     top: 0;
     left: 0;
@@ -133,8 +145,9 @@ h1 {
     height: 100%;
 }
 
+/* Kontainer Daftar Video Lainnya */
 .video-list-container {
-    background-color: rgba(249, 249, 249, 0.9); /* Juga semi-transparan */
+    background-color: rgba(249, 249, 249, 0.9); /* Latar belakang semi-transparan */
     padding: 15px;
     border-radius: 8px;
     text-align: left;
@@ -180,6 +193,38 @@ h1 {
     color: white;
 }
 
+/* Kelas utilitas untuk menyembunyikan elemen */
 .hidden {
     display: none;
 }
+
+/* --- Gaya untuk Kontainer Iklan Parallax Inline dari Penyedia --- */
+#inline-parallax-ad-content {
+    /* Background semi-transparan agar iklan dari penyedia terlihat jelas di atas background parallax utama */
+    background-color: rgba(200, 230, 255, 0.8);
+    padding: 20px;
+    margin: 20px 0; /* Jarak atas/bawah dari elemen lain */
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-height: 150px; /* Tinggi minimum agar iklan punya ruang yang cukup */
+    display: flex; /* Menggunakan flexbox untuk menengahkan konten iklan penyedia */
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Penting jika iklan penyedia mungkin memiliki elemen di luar batas */
+    /* Pastikan bahwa div dengan ID 'container-2c979ea6eea470e28aecac661089d1a9' di dalamnya akan mengisi ruang ini */
+}
+
+/* Jika Anda ingin konten di dalam container-2c979ea6eea470e28aecac661089d1a9 menempati seluruh ruang parent */
+#container-2c979ea6eea470e28aecac661089d1a9 {
+    width: 100%;
+    height: 100%;
+    display: flex; /* Untuk menengahkan konten dari iklan penyedia */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Hapus atau nonaktifkan gaya teks di bawah ini jika iklan dari penyedia sudah mengatur gaya teksnya sendiri */
+/* .inline-parallax-ad-content h3, .inline-parallax-ad-content p, .inline-parallax-ad-content .ad-call-to-action {
+    display: none;
+} */
