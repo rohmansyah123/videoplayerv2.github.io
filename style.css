@@ -57,12 +57,13 @@ h1 {
     border: 2px dashed #007bff;
     padding: 25px;
     border-radius: 8px;
+    margin-top: 20px; /* Memberi jarak dari video player di atasnya */
     margin-bottom: 20px;
-    display: flex;
+    display: flex; /* Dipastikan selalu flex saat tidak hidden */
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: 150px; /* Sedikit lebih kecil karena sudah ada video di atasnya */
     z-index: 2; /* Pastikan ad-overlay berada di atas kontainer saat aktif */
 }
 
@@ -110,12 +111,18 @@ h1 {
         grid-template-columns: 2fr 1fr; /* Video Player 2/3, Daftar Video 1/3 */
         grid-template-areas:
             "player list"
-            "inline-ad inline-ad"; /* Iklan parallax inline membentang di bawah player dan list */
+            "ad-overlay-area ad-overlay-area" /* Area untuk ad-overlay di bawah player dan list */
+            "inline-ad inline-ad"; /* Area untuk iklan parallax inline */
         gap: 20px;
     }
 
     #video-player-container {
         grid-area: player;
+    }
+
+    #ad-overlay {
+        grid-area: ad-overlay-area; /* Penempatan ad-overlay di area grid baru */
+        margin-top: 0; /* Hapus margin-top tambahan jika sudah diatur grid-gap */
     }
 
     #video-list-container {
@@ -212,10 +219,9 @@ h1 {
     justify-content: center;
     align-items: center;
     overflow: hidden; /* Penting jika iklan penyedia mungkin memiliki elemen di luar batas */
-    /* Pastikan bahwa div dengan ID 'container-2c979ea6eea470e28aecac661089d1a9' di dalamnya akan mengisi ruang ini */
 }
 
-/* Jika Anda ingin konten di dalam container-2c979ea6eea470e28aecac661089d1a9 menempati seluruh ruang parent */
+/* Memastikan div target iklan penyedia mengisi seluruh ruang parent */
 #container-2c979ea6eea470e28aecac661089d1a9 {
     width: 100%;
     height: 100%;
@@ -223,8 +229,3 @@ h1 {
     justify-content: center;
     align-items: center;
 }
-
-/* Hapus atau nonaktifkan gaya teks di bawah ini jika iklan dari penyedia sudah mengatur gaya teksnya sendiri */
-/* .inline-parallax-ad-content h3, .inline-parallax-ad-content p, .inline-parallax-ad-content .ad-call-to-action {
-    display: none;
-} */
