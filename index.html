@@ -3,24 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player dengan Iklan</title>
+    <title>Video Player dengan Iklan & Daftar Video</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Saksikan Video Menarik Ini!</h1>
-        
+
         <div id="ad-overlay" class="ad-overlay">
             <p>Mohon tunggu sebentar, iklan akan muncul...</p>
-            <a href="URL_IKLAN_DIRECT_LINK_ANDA" target="_blank" id="ad-link" class="ad-button">Klik untuk Lanjutkan ke Video</a>
+            <a href="#" target="_blank" id="ad-link" class="ad-button">Klik untuk Lanjutkan ke Video</a>
             <p class="ad-info">Iklan ini membantu kami menyajikan konten gratis.</p>
         </div>
 
-        <div id="video-player-container" class="video-player-container hidden">
-            <video id="myVideo" controls autoplay muted>
-                <source src="URL_VIDEO_ANDA.mp4" type="video/mp4">
-                Browser Anda tidak mendukung tag video.
-            </video>
+        <div id="video-player-section" class="video-player-section hidden">
+            <div id="video-player-container" class="video-player-container">
+                <video id="myVideo" controls autoplay muted>
+                    <source src="URL_VIDEO_ANDA.mp4" type="video/mp4">
+                    Browser Anda tidak mendukung tag video.
+                </video>
+            </div>
+
+            <div class="video-list-container">
+                <h2>Video Lainnya</h2>
+                <ul id="video-list">
+                    </ul>
+            </div>
         </div>
     </div>
 
