@@ -5,32 +5,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const myVideo = document.getElementById('myVideo');
     const videoList = document.getElementById('video-list');
 
-    // Waktu tunggu sebelum tombol iklan aktif (misalnya 3 detik)
-    const adDisplayDuration = 3000;
+    const adDisplayDuration = 3000; // Waktu tunggu sebelum tombol iklan aktif (3 detik)
 
-    let directLinks = [];
-    let randomDirectLink = '';
+    let directLinks = []; // Array untuk menyimpan direct link iklan
+    let randomDirectLink = ''; // Link iklan yang akan digunakan untuk sesi ini
 
-    let videos = [];
-    let currentVideoIndex = 0; // Indeks video yang sedang atau akan diputar
-    let selectedVideoIndex = 0; // Indeks video yang dipilih user dari daftar
+    let videos = []; // Array untuk menyimpan data video
+    let currentVideoIndex = 0; // Indeks video yang sedang diputar di player
+    let selectedVideoIndex = 0; // Indeks video yang dipilih user dari daftar (akan diputar setelah iklan)
 
-    // Fungsi untuk memuat dan memutar video
+    // --- Fungsi Utama ---
+
+    // Memuat dan memutar video di player
     function loadVideo(index) {
         if (index >= 0 && index < videos.length) {
             myVideo.src = videos[index].src;
             myVideo.load();
             myVideo.play();
             myVideo.muted = false; // Batalkan mute
-            currentVideoIndex = index; // Setel video yang sedang diputar
-            updateActiveVideoLink();
+            currentVideoIndex = index; // Perbarui indeks video yang sedang aktif
+            updateActiveVideoLink(); // Perbarui highlight di daftar video
         }
     }
 
-    // Fungsi untuk menampilkan overlay iklan
+    // Menampilkan overlay iklan
     function showAdOverlay() {
         adOverlay.classList.remove('hidden');
-        videoPlayerSection.classList.add('hidden'); // Sembunyikan player saat iklan muncul
+        videoPlayerSection.classList.add('hidden'); // Sembunyikan player & daftar saat iklan muncul
         myVideo.pause(); // Jeda video yang sedang diputar
         myVideo.currentTime = 0; // Reset waktu video ke awal (opsional)
 
@@ -53,19 +54,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Aktifkan tombol iklan setelah waktu tunggu
         setTimeout(() => {
             adLink.style.pointerEvents = 'auto';
             adLink.style.opacity = '1';
             adLink.textContent = "Klik untuk Lanjutkan ke Video";
-            adLink.href = randomDirectLink;
+            adLink.href = randomDirectLink; // Setel href tombol dengan link acak
         }, adDisplayDuration);
     }
 
-    // Fungsi untuk memperbarui kelas 'active-video' pada daftar
+    // Memperbarui kelas 'active-video' pada daftar video
     function updateActiveVideoLink() {
         const links = videoList.querySelectorAll('a');
         links.forEach((link, idx) => {
-            if (idx === currentVideoIndex) { // Gunakan currentVideoIndex untuk video yang aktif
+            if (idx === currentVideoIndex) {
                 link.classList.add('active-video');
             } else {
                 link.classList.remove('active-video');
@@ -73,17 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fungsi untuk mengisi daftar video di HTML
+    // Mengisi daftar video di HTML dari data yang diambil
     function populateVideoList() {
-        videoList.innerHTML = '';
+        videoList.innerHTML = ''; // Bersihkan daftar yang mungkin sudah ada
         videos.forEach((video, index) => {
             const listItem = document.createElement('li');
             const link = document.createElement('a');
-            link.href = "#";
+            link.href = "#"; // Mencegah navigasi halaman
             link.textContent = video.title;
-            link.dataset.index = index;
+            link.dataset.index = index; // Menyimpan indeks video
             link.addEventListener('click', (e) => {
-                e.preventDefault();
+                e.preventDefault(); // Mencegah tindakan default link
                 // Jika video yang dipilih berbeda dari yang sedang diputar
                 if (index !== currentVideoIndex) {
                     selectedVideoIndex = index; // Simpan indeks video yang dipilih user
@@ -95,7 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LOGIKA PENGAMBILAN DATA VIDEO DARI JSON ---
+    // --- Pengambilan Data Asinkron ---
+
+    // Mengambil daftar video dari file JSON
     fetch('data/videos.json')
         .then(response => {
             if (!response.ok) {
@@ -104,8 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            videos = data;
-            populateVideoList();
+            videos = data; // Simpan data video yang diambil
+            populateVideoList(); // Isi daftar video di UI
 
             // Pilih indeks video secara acak untuk video utama pertama kali
             const randomIndex = Math.floor(Math.random() * videos.length);
@@ -114,11 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             console.error('Error fetching videos:', error);
             alert('Gagal memuat daftar video. Silakan coba lagi nanti.');
-            // Jika gagal memuat video, mungkin perlu penanganan khusus atau tampilkan pesan kosong
+            // Jika gagal memuat video, mungkin perlu penanganan khusus
         });
-    // --- AKHIR LOGIKA PENGAMBILAN DATA VIDEO ---
 
-    // --- LOGIKA PENGAMBILAN DIRECT LINK IKLAN DARI JSON ---
+    // Mengambil daftar direct link iklan dari file JSON
     fetch('data/ads.json')
         .then(response => {
             if (!response.ok) {
@@ -128,22 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             directLinks = data;
-            // Panggil showAdOverlay untuk iklan pertama kali
-            showAdOverlay();
+            showAdOverlay(); // Panggil showAdOverlay untuk iklan pertama kali
         })
         .catch(error => {
             console.error('Error fetching direct links:', error);
             alert('Gagal memuat iklan. Video akan diputar tanpa iklan.');
-            // Jika gagal memuat iklan, langsung tampilkan video pertama
+            // Jika gagal memuat iklan, langsung tampilkan video pertama yang sudah disiapkan
             adOverlay.classList.add('hidden');
             videoPlayerSection.classList.remove('hidden');
             loadVideo(selectedVideoIndex); // Putar video yang dipilih (yaitu video awal acak)
         });
-    // --- AKHIR LOGIKA PENGAMBILAN DIRECT LINK IKLAN ---
+
+    // --- Event Listener ---
 
     // Listener untuk tombol iklan
     adLink.addEventListener('click', (event) => {
         // Ini akan membuka iklan di tab baru.
+        // Pastikan URL iklan direct link Anda valid dan dapat dibuka di tab baru.
 
         // Setelah iklan diklik, sembunyikan overlay iklan dan tampilkan bagian video
         adOverlay.classList.add('hidden');
