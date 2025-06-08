@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoPlayerSection = document.getElementById('video-player-section');
     const myVideo = document.getElementById('myVideo');
     const videoList = document.getElementById('video-list');
-    const inlineParallaxAdContent = document.getElementById('inline-parallax-ad-content'); // Referensi ke placeholder iklan parallax inline
+    const inlineParallaxAdContent = document.getElementById('inline-parallax-ad-content'); // Placeholder untuk iklan parallax inline
 
     const adDisplayDuration = 3000; // Durasi tunggu iklan pre-roll dalam milidetik (3 detik)
 
@@ -38,13 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index >= 0 && index < videos.length) {
             myVideo.src = videos[index].src; // Setel URL video
             myVideo.load(); // Muat ulang video
+
+            // Penting: Atur muted berdasarkan autoPlay untuk mematuhi kebijakan browser
             if (autoPlay) {
-                myVideo.play(); // Putar video jika 'autoPlay' true
                 myVideo.muted = false; // Batalkan mute jika diputar otomatis
+                myVideo.play(); // Putar video
             } else {
-                myVideo.pause(); // Jeda jika tidak autoPlay (misal, saat pertama dimuat)
-                myVideo.muted = true; // Biarkan muted jika belum diputar (opsional, bisa diubah)
+                myVideo.muted = true; // Tetap muted jika belum diputar otomatis
+                myVideo.pause(); // Jeda video
             }
+
             currentVideoIndex = index; // Perbarui indeks video yang sedang aktif diputar
             updateActiveVideoLink(); // Update highlight pada daftar video
         }
@@ -59,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
         myVideo.pause(); // Jeda video yang sedang diputar di player
         myVideo.currentTime = 0; // Reset waktu video ke awal (opsional)
 
-        // Nonaktifkan tombol iklan sementara dan tampilkan hitungan mundur
         adLink.style.pointerEvents = 'none'; // Membuat tombol tidak dapat diklik
         adLink.style.opacity = '0.6'; // Memberi efek visual nonaktif
         adLink.textContent = `Mohon tunggu ${adDisplayDuration / 1000} detik...`;
@@ -133,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
      * Menyuntikkan script iklan parallax dari penyedia iklan ke dalam placeholder HTML.
      */
     function injectParallaxProviderAd() {
-        // ID div target dari penyedia iklan (pastikan ini ada di index.html)
         const providerAdTargetId = 'container-2c979ea6eea470e28aecac661089d1a9';
         const providerScriptSrc = "//pl26583030.profitableratecpm.com/2c979ea6eea470e28aecac661089d1a9/invoke.js";
 
@@ -196,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Gagal memuat iklan. Anda mungkin tidak dapat memutar video.');
             // Jika gagal memuat iklan, sembunyikan overlay iklan
             adOverlay.classList.add('hidden');
+            // Pastikan video tetap bisa diputar jika iklan gagal total
+            loadVideo(selectedVideoIndex, true); // Putar video utama jika iklan tidak ada
+            scrollToVideoPlayer();
         });
 
     // --- Event Listener Global ---
