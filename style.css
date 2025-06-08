@@ -102,7 +102,7 @@ h1 {
     gap: 20px;
 }
 
-/* Media Query untuk Tata Letak Desktop */
+/* Media Query untuk Tata Letak Desktop (menggunakan CSS Grid) */
 @media (min-width: 768px) {
     #video-player-section {
         flex-direction: row; /* Berdampingan untuk desktop */
@@ -120,9 +120,11 @@ h1 {
         grid-area: player;
     }
 
+    /* Penempatan ad-overlay di area grid baru untuk desktop */
     #ad-overlay {
-        grid-area: ad-overlay-area; /* Penempatan ad-overlay di area grid baru */
+        grid-area: ad-overlay-area;
         margin-top: 0; /* Hapus margin-top tambahan jika sudah diatur grid-gap */
+        display: flex; /* Pastikan properti flexbox aktif untuk penataan kontennya */
     }
 
     #video-list-container {
